@@ -9,15 +9,27 @@ function App() {
   const [tasks, setTasks] = useState([]);
 
   useEffect(() => {
-    const fetchTasks = async () => {
-      const response = await fetch('http://localhost:5000/tasks');
-      const data = await response.json();
+    const getTasks = async () => {
+      const tasksFromServer = await fetchTasks();
+      setTasks(tasksFromServer);
+    }
 
-      setTasks(data);
-    };
-
-    fetchTasks();
+    getTasks();
   }, []);
+
+  const fetchTasks = async () => {
+    const response = await fetch('http://localhost:5000/tasks');
+    const data = await response.json();
+
+    return data;
+  };
+
+  const fetchTask = async (id) => {
+    const res = await fetch(`http://localhost:5000/tasks/${id}`);
+    const data = await res.json();
+
+    return data;
+  }
 
   const saveTask = async (task) => {
     const response = await fetch(`http://localhost:5000/tasks`, {      
@@ -39,16 +51,26 @@ function App() {
       method: 'DELETE'
     });
     
-    setTasks(tasks.filter((task) => task.id !== id))
+    const tasksFromServer = await fetchTasks();
+    setTasks(tasksFromServer);
   }
 
-  const toggleReminder = (id) => {
-    console.log("toggle" + id);
-    setTasks(
-      tasks.map((task) => 
-        task.id === id ? {...task, reminder: !task.reminder} :
-      task
-    ));
+  const toggleReminder = async (id) => {
+    const taskToToggle = await fetchTask(id);
+    const updTask = { ...taskToToggle, reminder: !taskToToggle.reminder };
+
+    const res = await fetch(`http://localhost:5000/tasks/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-type': 'application/json',
+      },
+      body: JSON.stringify(updTask)
+    })
+
+    const data = await res.json();
+
+    const tasksFromServer = await fetchTasks();
+    setTasks(tasksFromServer);
   }
 
   return (
