@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "./components/Header";
 import TaskForm from "./components/TaskForm";
 import Tasks from "./components/Tasks";
@@ -6,26 +6,18 @@ import Tasks from "./components/Tasks";
 function App() {
   const [showFormTask, setShowFormTask] = useState(false);
 
-  const [tasks, setTasks] = useState([
-    {
-        id: 1,
-        text: 'Doctors Appointment',
-        day: 'Feb 5th at 2:30pm',
-        reminder: true
-    },
-    {
-        id: 2,
-        text: 'Meeting at School',
-        day: 'Feb 6th at 1:30pm',
-        reminder: true
-    },
-    {
-        id: 3,
-        text: 'Grocery Shooping',
-        day: 'Feb 5th at 2:30pm',
-        reminder: false
-    }
-  ]);
+  const [tasks, setTasks] = useState([]);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      const response = await fetch('http://localhost:5000/tasks');
+      const data = await response.json();
+
+      setTasks(data);
+    };
+
+    fetchTasks();
+  }, []);
 
   const saveTask = (task) => {
     const id = Math.floor(Math.random() * 10000) + 1;
